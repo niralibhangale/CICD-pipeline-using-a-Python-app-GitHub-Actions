@@ -1,0 +1,30 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Clone Code') {
+            steps {
+                git 'https://github.com/your-niralibhangale/CICD-pipeline-using-a-Python-app-GitHub-Actions.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'pip install -r requirements.txt'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh 'pytest'
+            }
+        }
+
+        stage('Run App') {
+            steps {
+                sh 'python app.py'
+            }
+        }
+    }
+}
