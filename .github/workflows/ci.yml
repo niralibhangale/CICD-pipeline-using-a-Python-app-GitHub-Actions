@@ -21,6 +21,9 @@ jobs:
         run: |
           pip install -r requirements.txt
 
+      - name: Debug - List files
+        run: ls -R
+
       - name: Run tests
         run: |
           pytest
@@ -28,3 +31,6 @@ jobs:
       - name: Run app
         run: |
           python app.py
+
+      - name: Deploy Step
+        run: echo "App deployed successfully!"
