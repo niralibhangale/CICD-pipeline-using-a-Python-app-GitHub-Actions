@@ -11,6 +11,7 @@ pipeline {
             steps {
                 sh '''
                 export HOME=/tmp
+                export PATH=$HOME/.local/bin:$PATH
                 pip install --user -r requirements.txt
                 '''
             }
@@ -18,7 +19,11 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                sh 'python -m pytest'
+                sh '''
+                export HOME=/tmp
+                export PATH=$HOME/.local/bin:$PATH
+                pytest
+                '''
             }
         }
 
