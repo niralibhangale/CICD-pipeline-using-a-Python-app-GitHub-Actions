@@ -9,7 +9,10 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'pip install --user -r requirements.txt'
+                sh '''
+                export HOME=/tmp
+                pip install --user -r requirements.txt
+                '''
             }
         }
 
