@@ -2,12 +2,13 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "niralibhangale/python-app"
+        IMAGE_NAME = "niralibhangale/python-app"
+        IMAGE_TAG = "${BUILD_NUMBER}"
     }
 
     stages {
 
-        stage('Clone Code') {
+        stage('Checkout Code') {
             steps {
                 git 'https://github.com/niralibhangale/CICD-pipeline-using-a-Python-app-GitHub-Actions.git'
             }
@@ -15,19 +16,60 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'pip install -r requirements.txt'
+                sh '''
+                pip install -r requirements.txt
+                '''
             }
         }
 
-        stage('Run Tests') {
+        // 🔍 LINTING
+        stage('Lint Code') {
             steps {
-                sh 'pytest'
+                sh 'flake8 .'
             }
         }
 
+        // 🧪 TESTING
+        stage('Run Tests with Coverage') {
+            steps {
+                sh 'coverage run -m pytest'
+                sh 'coverage report'
+            }
+        }
+
+        // 🔐 SECURITY SCAN
+        stage('Security Scan') {
+            steps {
+                sh 'bandit -r .'
+            }
+        }
+
+        // 🔑 LOGIN FIRST
+        stage('Login to DockerHub') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'USERNAME',
+                    passwordVariable: 'PASSWORD'
+                )]) {
+                    sh 'echo $PASSWORD | docker login -u $USERNAME --password-stdin'
+                }
+            }
+        }
+
+        // 🐳 BUILD WITH VERSION
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
+                sh 'docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:latest'
+            }
+        }
+
+        // 📦 PUSH IMAGE
         stage('Push Image') {
             steps {
-                sh 'docker push $DOCKER_IMAGE'
+                sh 'docker push $IMAGE_NAME:$IMAGE_TAG'
+                sh 'docker push $IMAGE_NAME:latest'
             }
         }
     }
