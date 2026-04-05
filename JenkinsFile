@@ -7,13 +7,7 @@ pipeline {
     }
 
     stages {
-
-        stage('Checkout Code') {
-            steps {
-                git 'https://github.com/niralibhangale/CICD-pipeline-using-a-Python-app-GitHub-Actions.git'
-            }
-        }
-
+        
         stage('Install Dependencies') {
             steps {
                 sh '''
