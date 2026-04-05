@@ -1,29 +1,33 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_IMAGE = "niralibhangale/python-app"
+    }
+
     stages {
 
-        stage('Clone Code') {
+        stage('Build Docker Image') {
             steps {
-                git 'https://github.com/niralibhangale/CICD-pipeline-using-a-Python-app-GitHub-Actions.git'
+                sh 'docker build -t $DOCKER_IMAGE .'
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Login to DockerHub') {
             steps {
-                sh 'pip install -r requirements.txt'
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'USERNAME',
+                    passwordVariable: 'PASSWORD'
+                )]) {
+                    sh 'echo $PASSWORD | docker login -u $USERNAME --password-stdin'
+                }
             }
         }
 
-        stage('Run Tests') {
+        stage('Push Image') {
             steps {
-                sh 'pytest'
-            }
-        }
-
-        stage('Run App') {
-            steps {
-                sh 'python app.py'
+                sh 'docker push $DOCKER_IMAGE'
             }
         }
     }
