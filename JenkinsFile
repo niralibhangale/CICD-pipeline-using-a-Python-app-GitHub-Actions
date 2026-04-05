@@ -15,29 +15,58 @@ pipeline {
                 }
             }
             steps {
-                sh 'pip install -r requirements.txt'
+                sh '''
+                export HOME=/tmp
+                export PATH=$HOME/.local/bin:$PATH
+                pip install --user -r requirements.txt
+                '''
             }
         }
 
         // 🔍 LINTING
         stage('Lint Code') {
-            steps {
-                sh 'flake8 .'
+            agent {
+                docker {
+                    image 'python:3.10'
+                }
             }
-        }
+            steps {
+                sh '''
+                export HOME=/tmp
+                export PATH=$HOME/.local/bin:$PATH
+                flake8 .
+                '''
+            }
 
         // 🧪 TESTING
         stage('Run Tests with Coverage') {
-            steps {
-                sh 'coverage run -m pytest'
-                sh 'coverage report'
+            agent {
+                docker {
+                    image 'python:3.10'
+                }
             }
-        }
-
-        // 🔐 SECURITY SCAN
-        stage('Security Scan') {
             steps {
-                sh 'bandit -r .'
+                sh '''
+                export HOME=/tmp
+                export PATH=$HOME/.local/bin:$PATH
+                coverage run -m pytest
+                coverage report
+                '''
+            }
+}
+        // SECURITY
+        stage('Security Scan') {
+            agent {
+                docker {
+                    image 'python:3.10'
+                }
+            }
+            steps {
+                sh '''
+                export HOME=/tmp
+                export PATH=$HOME/.local/bin:$PATH
+                bandit -r .
+                '''
             }
         }
 
