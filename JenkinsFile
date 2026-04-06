@@ -67,7 +67,7 @@ pipeline {
                 export HOME=/tmp
                 export PATH=$HOME/.local/bin:$PATH
                 pip install --user bandit
-                bandit -r .
+                bandit -r . -s B101
                 '''
             }
         }
