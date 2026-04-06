@@ -23,7 +23,6 @@ pipeline {
             }
         }
 
-        // 🔍 LINTING
         stage('Lint Code') {
             agent {
                 docker {
@@ -34,12 +33,12 @@ pipeline {
                 sh '''
                 export HOME=/tmp
                 export PATH=$HOME/.local/bin:$PATH
+                pip install --user flake8
                 flake8 .
                 '''
             }
-        }    
+        }
 
-        // 🧪 TESTING
         stage('Run Tests with Coverage') {
             agent {
                 docker {
@@ -50,12 +49,13 @@ pipeline {
                 sh '''
                 export HOME=/tmp
                 export PATH=$HOME/.local/bin:$PATH
+                pip install --user coverage pytest
                 coverage run -m pytest
                 coverage report
                 '''
             }
         }
-        // SECURITY
+
         stage('Security Scan') {
             agent {
                 docker {
@@ -66,12 +66,12 @@ pipeline {
                 sh '''
                 export HOME=/tmp
                 export PATH=$HOME/.local/bin:$PATH
+                pip install --user bandit
                 bandit -r .
                 '''
             }
         }
 
-        // 🔑 LOGIN FIRST
         stage('Login to DockerHub') {
             steps {
                 withCredentials([usernamePassword(
@@ -84,7 +84,6 @@ pipeline {
             }
         }
 
-        // 🐳 BUILD WITH VERSION
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
@@ -92,7 +91,6 @@ pipeline {
             }
         }
 
-        // 📦 PUSH IMAGE
         stage('Push Image') {
             steps {
                 sh 'docker push $IMAGE_NAME:$IMAGE_TAG'
